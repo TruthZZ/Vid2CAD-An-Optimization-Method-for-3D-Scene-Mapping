@@ -29,8 +29,12 @@ def world2camera(worldcoors, camera_pos, camera_view, camera_up):
     return localcoorslist[0:3]
 
 def camera2pixel(cameracoors, camera_intrinsics):
-    x = round((cameracoors[0] * camera_intrinsics[0, 0]) / cameracoors[2] + camera_intrinsics[0, 2])
-    y = round((cameracoors[1] * camera_intrinsics[1, 1]) / cameracoors[2] + camera_intrinsics[1, 2])
+    if cameracoors[2] < 0:
+        x = -1
+        y = -1
+    else:
+        x = round((cameracoors[0] * camera_intrinsics[0, 0]) / cameracoors[2] + camera_intrinsics[0, 2])
+        y = round((cameracoors[1] * camera_intrinsics[1, 1]) / cameracoors[2] + camera_intrinsics[1, 2])
 
     return [x, y]
 
