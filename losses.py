@@ -2,11 +2,14 @@ import torch
 import torch.nn as nn
 
 class OverallLoss(nn.Module):
-    def __init__(self):
+    def __init__(self, frame_width, frame_height):
         super(OverallLoss, self).__init__()
 
+        self.frame_width = frame_width
+        self.frame_height = frame_height
+
         self.pixel_center_loss = Pixel_Center_Loss()
-        self.world_center_loss = World_Center_Loss()
+        self.world_center_loss = World_Center_Loss(self.frame_width, self.frame_height)
         self.rotation_loss = Rotation_Loss()
         self.scale_bbox_loss = Scale_Bbox_Loss()
         self.scale_class_loss = Scale_Class_Loss()
@@ -63,10 +66,10 @@ class OverallLoss(nn.Module):
         bbox_3d_corners = torch.cat(bbox_3d_corners)
         mins = torch.min(bbox_3d_corners, dim=0)
         maxs = torch.max(bbox_3d_corners, dim=0)
-        bbox_2d = torch.cat([mins[0][0].unsqueeze(0)/960,
-                            maxs[0][0].unsqueeze(0)/960,
-                            mins[0][1].unsqueeze(0)/720,
-                            maxs[0][1].unsqueeze(0)/720])
+        bbox_2d = torch.cat([mins[0][0].unsqueeze(0)/self.frame_width,
+                            maxs[0][0].unsqueeze(0)/self.frame_width,
+                            mins[0][1].unsqueeze(0)/self.frame_height,
+                            maxs[0][1].unsqueeze(0)/self.frame_height])
 
         pixel_center_loss = self.pixel_center_loss(k, center)
         world_center_loss = self.world_center_loss(kx, ky, beta, ER, et, K, t)
@@ -98,13 +101,16 @@ class Pixel_Center_Loss(nn.Module):
         return self.l1loss(k, c)
 
 class World_Center_Loss(nn.Module):
-    def __init__(self):
+    def __init__(self, frame_width, frame_height):
         super(World_Center_Loss, self).__init__()
         self.l1loss = nn.L1Loss(reduction='mean')
 
+        self.frame_width = frame_width
+        self.frame_height = frame_height
+
     def forward(self, kx, ky, beta, ER, et, K, t):
         # camera_coors = torch.tensor([[beta*kx*960, beta*ky*720, beta]], requires_grad=True).t()
-        camera_coors = torch.cat([beta*kx*960, beta*ky*720, beta], dim=0).unsqueeze(0).t()
+        camera_coors = torch.cat([beta*kx*self.frame_width, beta*ky*self.frame_height, beta], dim=0).unsqueeze(0).t()
         # print(beta, kx, ky)
         # print(camera_coors)
         camera_coors = torch.mm(torch.linalg.inv(K), camera_coors)

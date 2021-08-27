@@ -13,9 +13,12 @@ class optimizer():
     def __init__(self):
         super(optimizer, self).__init__()
 
+        self.frame_width = 960
+        self.frame_height = 720
+
         self.big_epoch_num = 5000
         self.lr = 0.002
-        self.loss_func = OverallLoss()
+        self.loss_func = OverallLoss(self.frame_width, self.frame_height)
 
         path_frame = './Syn_data/frames/'
         path_jsons = './Syn_data/jittered/'
@@ -43,9 +46,9 @@ class optimizer():
                 for pc in pixel_coors:
                     if pc < 0:
                         flag = False
-                if pixel_coors[0] > 959 or pixel_coors[2] > 959 or pixel_coors[3] > 959:
+                if pixel_coors[0] > (self.frame_width-1) or pixel_coors[2] > (self.frame_width-1) or pixel_coors[3] > (self.frame_width-1):
                     flag = False
-                if pixel_coors[1] > 719 or pixel_coors[4] > 719 or pixel_coors[5] > 719:
+                if pixel_coors[1] > (self.frame_height-1) or (self.frame_height-1) or (self.frame_height-1):
                     flag = False
                 if flag:
                     self.objects_frame_dict[keys].append(i)
@@ -91,13 +94,13 @@ class optimizer():
 
                 obj_info_dict = frame_dict['objects'][obj_name]
                 bbox_3d = obj_info_dict['bounding_box_3d']
-                center_x = obj_info_dict['center'][0] / 960
-                center_y = obj_info_dict['center'][1] / 720
+                center_x = obj_info_dict['center'][0] / self.frame_width
+                center_y = obj_info_dict['center'][1] / self.frame_height
                 center = Variable(torch.tensor([center_x, center_y]))
-                bbox_x_min = obj_info_dict['bounding_box_2d'][0] / 960
-                bbox_x_max = obj_info_dict['bounding_box_2d'][1] / 960
-                bbox_y_min = obj_info_dict['bounding_box_2d'][2] / 720
-                bbox_y_max = obj_info_dict['bounding_box_2d'][3] / 720
+                bbox_x_min = obj_info_dict['bounding_box_2d'][0] / self.frame_width
+                bbox_x_max = obj_info_dict['bounding_box_2d'][1] / self.frame_width
+                bbox_y_min = obj_info_dict['bounding_box_2d'][2] / self.frame_height
+                bbox_y_max = obj_info_dict['bounding_box_2d'][3] / self.frame_height
                 bbox_2d = Variable(torch.tensor([bbox_x_min, bbox_x_max, bbox_y_min, bbox_y_max]))
                 Rotation = Variable(torch.tensor(obj_info_dict['Rotation']))
                 s_cls = Variable(torch.tensor(obj_info_dict['origin_scale']))
