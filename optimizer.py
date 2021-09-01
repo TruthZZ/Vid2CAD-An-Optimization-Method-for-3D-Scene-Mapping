@@ -16,7 +16,7 @@ class optimizer():
         self.frame_width = 960
         self.frame_height = 720
 
-        self.big_epoch_num = 5000
+        self.big_epoch_num = 500
         self.lr = 0.002
         self.loss_func = OverallLoss(self.frame_width, self.frame_height)
 
@@ -48,7 +48,7 @@ class optimizer():
                         flag = False
                 if pixel_coors[0] > (self.frame_width-1) or pixel_coors[2] > (self.frame_width-1) or pixel_coors[3] > (self.frame_width-1):
                     flag = False
-                if pixel_coors[1] > (self.frame_height-1) or (self.frame_height-1) or (self.frame_height-1):
+                if pixel_coors[1] > (self.frame_height-1) or pixel_coors[4] > (self.frame_height-1) or pixel_coors[5] > (self.frame_height-1):
                     flag = False
                 if flag:
                     self.objects_frame_dict[keys].append(i)
@@ -116,7 +116,7 @@ class optimizer():
 
             # self.all_loss_list.append(loss_by_frame)
 
-            loss /= len(frame_list)
+            loss = loss / len(frame_list)
             self.overall_loss[obj_name].append(loss.item())
             loss.backward()
             optimizer_1.step()
@@ -153,14 +153,14 @@ class optimizer():
 
 if __name__ == '__main__':
     test_optimizer = optimizer()
-    # res_dict = test_optimizer.optm_single_obj('chair_10')
-    # print(res_dict)
-    scene_dict = test_optimizer.optm_all_obj()
+    res_dict = test_optimizer.optm_single_obj('chair_10')
+    print(res_dict)
+    # scene_dict = test_optimizer.optm_all_obj()
     # with open('./all_res.json', 'w') as f:
     #     json.dump(test_optimizer.res_list, f, indent=4, sort_keys=False)
     # with open('./all_loss_list.json', 'w') as f:
     #     json.dump(test_optimizer.all_loss_list, f, indent=4, sort_keys=False)
-    with open('./scene_objects.json', 'w') as f:
-        json.dump(scene_dict, f, indent=4, sort_keys=False)
+    # with open('./scene_objects.json', 'w') as f:
+    #     json.dump(scene_dict, f, indent=4, sort_keys=False)
     with open('./overall_loss.json', 'w') as f:
         json.dump(test_optimizer.overall_loss, f, indent=4, sort_keys=False)
